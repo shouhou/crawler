@@ -78,9 +78,6 @@ function handleLine(data) {
     }
 }
 
-
-
-
 function saveImgs(localPath, remotePath, callback) {
     var options = { //设置本地代理
         host: '127.0.0.1',
