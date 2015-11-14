@@ -6,9 +6,9 @@ var cp = require('child_process');
 var t = require('./t');
 var log = require('./t').log;
 
-function loadHTML(callback) {
+function loadHTML(keyword, callback) {
     var html = '';
-    var casper = cp.exec('casperjs casper.js', function(error, stdout, stderr) {
+    var casper = cp.exec('casperjs casper.js ' + keyword, function(error, stdout, stderr) {
         if (error) {
             console.log(error.stack);
             console.log('casper error: ', error.code);
@@ -118,13 +118,22 @@ function saveImgs(urls, keyword) {
     });
 }
 
+
 (function main() {
-    var keyword = '王凡';
-    // var url = 'http://www.baidu.com/s?wd=' + encodeURI(keyword)
-    var url = "http://s.weibo.com/pic/" + encodeURI(keyword) + "&Refer=pic_box"
-    loadHTML(function(data) {
-        var imgs = filterImg(data);
-        // console.log(imgs);
-        saveImgs(imgs, keyword);
+    fs.readFile("keywords.txt", 'utf-8', function(err, data) {
+        if (err) console.log('error');
+        // var url = 'http://www.baidu.com/s?wd=' + encodeURI(keyword)
+        var keywords = data.split('\n');
+        for (var i in keywords) {
+            var keyword = keywords[i];
+            var url = "http://s.weibo.com/pic/" + encodeURI(keyword) + "&Refer=pic_box"
+            loadHTML(keyword, function(data) {
+                var imgs = filterImg(data);
+                // console.log(imgs);
+                saveImgs(imgs, keyword);
+            });
+        }
+
     });
+
 })();

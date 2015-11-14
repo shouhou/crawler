@@ -1,3 +1,4 @@
+var utils = require("utils");
 var casper = require('casper').create({
     verbose: false,
     logLevel: 'debug',
@@ -7,16 +8,28 @@ var casper = require('casper').create({
     }
 });
 phantom.outputEncoding = "gbk"; //解决乱码问题
-casper.start();
 
-var keyword = '王凡';
+
+var keyword = casper.cli.args[0] || 'default';
+// casper.echo(utils.dump(casper.cli.args));
+// casper.echo(utils.dump(casper.cli.options));
+
 var url = "http://s.weibo.com/pic/" + encodeURI(keyword) + "&Refer=pic_box"
-casper.thenOpen(url, function() {
-    // this.echo('\n' + this.getCurrentUrl());
+casper.start(url);
+casper.then(function() { //thenOpen
+    this.echo('\n' + this.getCurrentUrl());
     // fs.write('page.htm', this.getHTML(), 'w');
     this.echo(this.getHTML());
-    casper.exit();
+    this.exit();
 });
+casper.run();
+
+// casper.then(function() {
+//     // aggregate results for the 'casperjs' search
+//     links = this.evaluate(getLinks);
+//     // now search for 'phantomjs' by filling the form again
+//     this.fill('form[action="/search"]', { q: 'phantomjs' }, true);
+// });
 
 // casper.then(function getImgs() {
 //     var imgs = [];
