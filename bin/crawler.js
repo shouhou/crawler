@@ -7,14 +7,22 @@ var t = require('./t');
 var log = require('./t').log;
 
 function loadHTML(keyword, callback) {
+    // console.log('loadHTML', keyword);
     var html = '';
     var casper = cp.exec('casperjs casper.js ' + keyword, function(error, stdout, stderr) {
         if (error) {
             console.log(error.stack);
             console.log('casper error: ', error.code);
         }
+        if (stderr) {
+            console.log(stderr.stack);
+            console.log('casper stderr: ', stderr.code);
+        }
         callback(stdout);
     });
+    // casper.on('exit', function() {
+    //     console.log('exit');
+    // });
 }
 
 function fetchReq(remotePath, type, callback) {
@@ -91,13 +99,13 @@ function saveImg(localPath, remotePath, callback) {
                     callback(err);
                 }
             });
-            callback('success');
+            callback(null, 'success');
         });
     });
     req.end();
 }
 
-function saveImgs(urls, keyword) {
+function saveImgs(urls, keyword, callback) {
     var size = 10;
     var funcs = [];
     for (var i = 0, len = urls.length; i < len; i++) {
@@ -113,27 +121,38 @@ function saveImgs(urls, keyword) {
         task.run(callback);
     }, size);
 
-    queue.push(funcs, function(res) {
-        log('res: ', res);
-    });
-}
+    queue.push(funcs, function(err) {
 
+    });
+
+    queue.drain = function() {
+        log(keyword, ' queue complete');
+        callback();
+    }
+}
 
 (function main() {
     fs.readFile("keywords.txt", 'utf-8', function(err, data) {
         if (err) console.log('error');
         // var url = 'http://www.baidu.com/s?wd=' + encodeURI(keyword)
         var keywords = data.split('\n');
+        var funcs = [];
         for (var i in keywords) {
-            var keyword = keywords[i];
-            var url = "http://s.weibo.com/pic/" + encodeURI(keyword) + "&Refer=pic_box"
-            loadHTML(keyword, function(data) {
-                var imgs = filterImg(data);
-                // console.log(imgs);
-                saveImgs(imgs, keyword);
-            });
+            var keyword = keywords[i].replace('\r', '');
+            var func = async.apply(function(keyword, callback) {
+                loadHTML(keyword, function(data) {
+                    var imgs = filterImg(data);
+                    // console.log('imgs:', imgs);
+                    saveImgs(imgs, keyword, function() {
+                        callback(null, 'complete: ' + keyword + ' ' + imgs.length);
+                    });
+                });
+            }, keyword);
+            funcs.push(func);
         }
-
+        console.log('funcs.length', funcs.length);
+        async.series(funcs, function(err, values) {
+            console.log(values);
+        });
     });
-
 })();

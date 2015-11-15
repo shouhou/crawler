@@ -1,2 +1,9 @@
 airport
 animal
+beach
+bear
+birds
+boats
+book
+bridge
+buildings
