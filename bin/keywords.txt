@@ -6,4 +6,3 @@ birds
 boats
 book
 bridge
-buildings

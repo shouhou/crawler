@@ -3,7 +3,6 @@
  * @authors LingYao (shouhouml@gmail.com)
  * @date    2015-09-15 20:07:13
  */
-
 var fs = require('fs');
 var http = require('http');
 var request = require('request');
